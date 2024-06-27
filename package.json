@@ -1,0 +1,13 @@
+{
+  "name": "cwa-backend-setup",
+  "version": "1.0.1",
+  "description": "CLI tool to setup a common Express.js backend developed by codewithashim",
+  "main": "bin/cli.js",
+  "bin": {
+    "cwa-backend-setup": "bin/cli.js"
+  },
+  "author": "Ashim Rudra Paul",
+  "dependencies": {
+    "fs-extra": "^11.2.0"
+  }
+}

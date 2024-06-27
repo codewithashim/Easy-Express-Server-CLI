@@ -1,0 +1,19 @@
+version: '3'
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: CWAServer
+    container_name: CWAServer
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/usr/src/app
+    environment:
+      NODE_ENV: ${NODE_ENV}
+    command: yarn start
+
+networks:
+  app-network:
+    driver: bridge
