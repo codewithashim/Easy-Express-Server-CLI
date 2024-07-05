@@ -4,6 +4,7 @@ import httpStatus from 'http-status';
 import globalErrorHandler from './app/middlewares/globalErrorHandler';
 import routes from './app/routes';
 import cookieParser from 'cookie-parser';
+import path from 'path';
 const app: Application = express();
 
 app.use(cors());
@@ -14,13 +15,16 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 app.use('/api/v1/', routes);
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+
 
 app.use(globalErrorHandler);
 
 app.get('/', (req: Request, res: Response) => {
     res.json({
       sucess: true,
-      message: 'Welcome to Marriage Consultancy Server',
+      message: 'Welcome to Doctor Portal Server',
       status: httpStatus.OK,
     })
 });
