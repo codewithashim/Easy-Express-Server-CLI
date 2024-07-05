@@ -9,6 +9,8 @@
 # testing
 /coverage
 
+.env
+
 logs
 
 # production
