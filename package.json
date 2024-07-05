@@ -1,10 +1,10 @@
 {
-  "name": "easy-express",
+  "name": "easy-express-cwa",
   "version": "1.1.2",
   "description": "CLI tool to setup a common Express.js backend developed by codewithashim",
   "main": "bin/cli.js",
   "bin": {
-    "cwa-backend-setup": "bin/cli.js"
+    "easy-express-cwa": "bin/cli.js"
   },
   "author": "Ashim Rudra Paul",
   "dependencies": {
