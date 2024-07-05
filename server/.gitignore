@@ -9,7 +9,6 @@
 # testing
 /coverage
 
-.env
 
 logs
 
