@@ -18,17 +18,16 @@ export default {
   app_id: process.env.APP_ID,
   app_certificate: process.env.APP_CERTIFICATE,
 
-  aws: {
-    access_key: process.env.AWS_ACCESS_KEY_ID,
-    secret_key: process.env.AWS_SECRET_ACCESS_KEY,
-    bucket_name: process.env.AWS_BUCKET_NAME,
-    region: process.env.AWS_REGION,
-  },
-
   jwt: {
     secret: process.env.JWT_SECRET,
     refresh_secret: process.env.JWT_REFRESH_SECRET,
     expiresIn: process.env.JWT_EXPIRATION_TIME,
     refresh_expires: process.env.JWT_REFRESH_EXPIRATION_TIME,
   },
+
+  cloudinary: {
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+  }
 };

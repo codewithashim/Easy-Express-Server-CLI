@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import jwt, { JwtPayload, Secret } from 'jsonwebtoken';
 
 const createToken = (

@@ -1,64 +1,70 @@
-import path from 'path';
-import { createLogger, format, transports } from 'winston';
-import DailyRotateFile from 'winston-daily-rotate-file';
-const { combine, timestamp, label, printf } = format;
+import path from "path";
+import { createLogger, format, transports } from "winston";
+import DailyRotateFile from "winston-daily-rotate-file";
+import dotenv from "dotenv";
 
-//Customm Log Format
+dotenv.config();
 
-const myFormat = printf(({ level, message, label, timestamp }) => {
+const { combine, timestamp, label, printf, errors } = format;
+
+// Custom Log Format
+const myFormat = printf(({ level, message, label, timestamp, stack }) => {
   const date = new Date(timestamp);
   const hour = date.getHours();
   const minutes = date.getMinutes();
   const seconds = date.getSeconds();
-  return `${date.toDateString()} ${hour}:${minutes}:${seconds} } [${label}] ${level}: ${message}`;
+  return `${date.toDateString()} ${hour}:${minutes}:${seconds} [${label}] ${level}: ${stack || message}`;
 });
+
+const createTransport = (level: string, filename: string) => {
+  return new DailyRotateFile({
+    level,
+    filename: path.join(process.cwd(), "logs", filename, `Easy-Express-%DATE%-${level}.log`),
+    datePattern: "YYYY-MM-DD",
+    zippedArchive: true,
+    maxSize: "20m",
+    maxFiles: "14d",
+  });
+};
+
+const createTransports = () => {
+  const transportList = [
+    new transports.Console(),
+    createTransport("info", "success"),
+    createTransport("error", "errors"),
+  ];
+
+  return transportList;
+};
 
 const logger = createLogger({
-  level: 'info',
+  level: "info",
   format: combine(
-    label({ label: 'Marrysafe Server' }),
+    label({ label: "Easy Express Server" }),
     timestamp(),
+    errors({ stack: true }), 
     myFormat
   ),
-  transports: [
+  transports: createTransports(),
+  exceptionHandlers: [
     new transports.Console(),
-    new DailyRotateFile({
-      filename: path.join(
-        process.cwd(),
-        'logs',
-        'successes',
-        'phu-%DATE%-success.log'
-      ),
-      datePattern: 'YYYY-DD-MM-HH',
-      zippedArchive: true,
-      maxSize: '20m',
-      maxFiles: '14d',
-    }),
+    createTransport("exceptions", "exceptions"),
+  ],
+  rejectionHandlers: [
+    new transports.Console(),
+    createTransport("rejections", "rejections"),
   ],
 });
-
-const errorlogger = createLogger({
-  level: 'error',
+ 
+const errorLogger = createLogger({
+  level: "error",
   format: combine(
-    label({ label: 'Marrysafe Server' }),
+    label({ label: "Easy Express Server" }),
     timestamp(),
+    errors({ stack: true }),
     myFormat
   ),
-  transports: [
-    new transports.Console(),
-    new DailyRotateFile({
-      filename: path.join(
-        process.cwd(),
-        'logs',
-        'errors',
-        'phu-%DATE%-error.log'
-      ),
-      datePattern: 'YYYY-DD-MM-HH',
-      zippedArchive: true,
-      maxSize: '20m',
-      maxFiles: '14d',
-    }),
-  ],
+  transports: createTransports(),
 });
 
-export { logger, errorlogger };
+export { logger, errorLogger };

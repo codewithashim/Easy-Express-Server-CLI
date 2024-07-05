@@ -1,20 +1,20 @@
-# Use an official Node.js runtime as a parent image
-FROM node:20-alpine
+# Stage 1: Build stage
+FROM node:21-alpine AS build
 
-# Set the working directory in the container
 WORKDIR /usr/src/app
 
-# Copy package.json and yarn.lock to the working directory
-COPY package.json yarn.lock ./
+COPY package*.json ./
+COPY yarn.lock ./
 
-# Install app dependencies
-RUN yarn install
+RUN yarn install --production
 
-# Bundle app source
-COPY ./ .
+FROM node:21-alpine AS production
 
-# Expose the port on which your app runs
+WORKDIR /usr/src/app
+
+COPY --from=build /usr/src/app/node_modules ./node_modules
+COPY . .
+
 EXPOSE 8000
 
-# Define the command to run your app
 CMD ["yarn", "start"]
