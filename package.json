@@ -1,8 +1,9 @@
 {
   "name": "easy-express-cwa",
-  "version": "1.2.6",
+  "version": "1.2.10",
   "description": "CLI tool to setup a common Express.js backend developed by codewithashim",
   "main": "bin/cli.js",
+  "license": "MIT",
   "bin": {
     "easy-express-cwa": "bin/cli.js"
   },
@@ -11,6 +12,33 @@
     "fs-extra": "^11.2.0"
   },
   "scripts": {
-    "start": "node bin/cli.js"
-  }
+    "start": "node bin/cli.js",
+    "install": "echo 'easy-express-cwa has been installed. Use `npx easy-express-cwa` command to get started.'"
+  },
+  "keywords": [
+    "express",
+    "backend",
+    "cli",
+    "tool",
+    "automation",
+    "typescript",
+    "docker",
+    "jwt",
+    "authentication",
+    "authorization",
+    "logger",
+    "redis",
+    "file-upload",
+    "cloudinary",
+    "aws-s3",
+    "swagger",
+    "cookies",
+    "security",
+    "easy-express",
+    "server-setup",
+    "Nodejs",
+    "TypeScript",
+    "JavaScript",
+    "Codewithashim"
+  ]
 }
