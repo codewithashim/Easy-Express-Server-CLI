@@ -33,7 +33,6 @@ const UserSchema = new Schema<IUser>(
       enum: Object.values(ENUM_USER_ROLE),
       required: true,
     },
-
     password_reset_token: {
       token: String,
       expires: Date,
@@ -56,7 +55,7 @@ UserSchema.pre("save", async function (next) {
   if (user.isModified("password")) {
     user.password = await bcrypt.hash(
       user.password,
-      Number(config.bcrypt_salt_round)
+      Number(config.jwt.bcrypt_salt_round)
     );
   }
   next();
