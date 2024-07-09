@@ -1,4 +1,4 @@
-# Easy Express 🚀
+# Easy Express CWA 🚀
 
 `easy-express` is a CLI tool to automate the setup of a common Express.js backend. This tool helps you quickly scaffold a backend setup without rewriting the setup each time.
 
@@ -18,7 +18,7 @@
 ## Installation 🛠
 
 ```sh
-npm install -g easy-express
+npm install -g easy-express-cwa
 ```
 
 ```sh
@@ -30,7 +30,7 @@ cd server
 ```
 
 ```sh
-easy-express
+easy-express-cwa
 ```
 
 Configure your environment variables:
@@ -130,7 +130,6 @@ server/
 
 ```
 
-
 # **Example**
 
 To add the example code snippets for the `example` entity CRUD operations in your `README.md` file, you can follow this structure:
@@ -148,7 +147,6 @@ Here’s how you can add them to your `README.md`:
 # Example Module
 
 This module provides CRUD operations for the `example` entity. Below are the code snippets for the controller, interface, model, route, service, and validation.
-
 
 ## Interface
 

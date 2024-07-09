@@ -2,8 +2,6 @@ import express from "express";
 import validateRequest from "../../middlewares/validateRequest";
 import { createUserValidator } from "../user/user.validation";
 import { AuthController } from "./auth.controller";
-import auth from "../../middlewares/auth";
-import { ENUM_USER_ROLE } from "../../../enums/user";
 import upload from "../../middlewares/multer/multer";
 const router = express.Router();
 
@@ -20,23 +18,13 @@ router.post(
   AuthController.userLogin
 );
 
-router.post(
-  "/refresh-token",
-  validateRequest(createUserValidator.refreshTokenSchema),
-  AuthController.refreshToken
-);
+router.delete("/logout", AuthController.logout);
 
-router.post(
-  '/change-password',
-  auth(
-    ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.USER,
-    ENUM_USER_ROLE.SUB_ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN,
-  ),
-  validateRequest(createUserValidator.changePasswordSchema),
-  AuthController.changePassword
-);
+router.post("/forget-password", AuthController.forgetPassword);
+
+router.post("/reset-password", AuthController.resetPassword);
+
+router.post("/change-password", AuthController.changePassword);
 
 
 export const AuthRoutes = router;

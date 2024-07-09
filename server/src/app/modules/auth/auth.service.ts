@@ -1,17 +1,12 @@
 import httpStatus from "http-status";
 import ApiError from "../../../errors/ApiError";
-import {
-  IChangePassword,
-  ILoginUser,
-  ILoginUserResponse,
-  IRefreshTokenResponse,
-  IUser,
-} from "../user/user.interface";
+import { ILoginUser, IUser } from "../user/user.interface";
 import { User } from "../user/user.model";
 import { jwtHelper } from "../../../helpers/jwtHelper";
 import config from "../../../config";
-import { JwtPayload, Secret } from "jsonwebtoken";
 import { responseMessage } from "../../../constants/message";
+import { MailUtilService } from "../../../utils/mail.util";
+import bcrypt from "bcrypt";
 
 const createUser = async (payload: IUser): Promise<IUser | null> => {
   try {
@@ -25,53 +20,37 @@ const createUser = async (payload: IUser): Promise<IUser | null> => {
   }
 };
 
-const userLogin = async (payload: ILoginUser): Promise<ILoginUserResponse> => {
+const userLogin = async (payload: ILoginUser): Promise<string> => {
   const { email, password } = payload;
-
   try {
-    const user = await User.findOne({ email }).select("+password");
-
-    if (!user) {
+    const isExist = await User.findOne({ email });
+    if (!isExist) {
       throw new ApiError(
-        httpStatus.NOT_FOUND,
-        responseMessage.NOT_FOUND_MESSAGE
+        httpStatus.INTERNAL_SERVER_ERROR,
+        responseMessage.USER_NOT_EXIST
       );
     }
-
-    const isPasswordMatch = await user.isPasswordMatched(
+    const user = await User.findOne({ email }).select("+password");
+    const isPasswordMatch = await user?.isPasswordMatched(
       password,
       user.password
     );
     if (!isPasswordMatch) {
       throw new ApiError(
-        httpStatus.UNAUTHORIZED,
+        httpStatus.INTERNAL_SERVER_ERROR,
         responseMessage.INCORRECT_PASSWORD_MESSAGE
       );
     }
-
-    const { role, email: userEmail, name, phone, id, profile } = user;
-    const accessToken = jwtHelper.createToken(
-      { role, email: userEmail, name, phone, id, profile },
-      config.jwt.secret as Secret,
-      config.jwt.expiresIn as string
-    );
-
-    const refreshToken = jwtHelper.createToken(
-      { role, email: userEmail, name, phone, id },
-      config.jwt.refresh_secret as Secret,
-      config.jwt.refresh_expires as string
-    );
-
-    return {
-      accessToken,
-      refreshToken,
-      id,
-      name,
-      phone,
-      email: userEmail,
-      role,
-      profile,
+    const jwtPayload = {
+      id: isExist._id,
+      email: isExist.email,
     };
+    const accessToken = jwtHelper.createToken(
+      jwtPayload,
+      config.jwt.secret!,
+      config.jwt.expiresIn!
+    );
+    return accessToken;
   } catch (error) {
     throw new ApiError(
       httpStatus.INTERNAL_SERVER_ERROR,
@@ -80,78 +59,65 @@ const userLogin = async (payload: ILoginUser): Promise<ILoginUserResponse> => {
   }
 };
 
-const refreshToken = async (token: string): Promise<IRefreshTokenResponse> => {
-  let verifiedToken = null;
+const forgetPassword = async (email: string) => {
   try {
-    verifiedToken = jwtHelper.verifyToken(
-      token,
-      config.jwt.refresh_secret as Secret
-    );
+    const isUserExist = await User.findOne({ email });
+    if (!isUserExist) {
+      return false;
+    }
+    const jwtPayload = {
+      userId: isUserExist._id,
+    };
+    const token = jwtHelper.createToken(jwtPayload, config.jwt.secret!, "10m");
+    const encodedEmail = encodeURIComponent(isUserExist.email);
+    const encodedName = encodeURIComponent(isUserExist.name);
+    const link = `${config.domain}/reset-password?token=${token}&userId=${isUserExist._id}&email=${encodedEmail}&name=${encodedName}`;
+    const mailResult = await MailUtilService.sendResetPasswordLink(email, link);
+    return { user: isUserExist, messageId: mailResult.messageId };
   } catch (error) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, responseMessage.INVALID_REFRESH_TOKEN);
+    throw new Error(responseMessage.INTERNAL_SERVER_ERROR_MESSAGE);
   }
-  const { email, role, name, phone, id, profile } = verifiedToken;
-  const user = new User();
-  const isUserExist = await user.isUserExist(email);
-  if (!isUserExist) {
-    throw new ApiError(httpStatus.NOT_FOUND, responseMessage.USER_NOT_EXIST);
+};
+
+const resetPassword = async (userId: string, password: string) => {
+  try {
+    const hashedPassword = await bcrypt.hash(password, 12);
+    await User.findByIdAndUpdate(userId, {
+      $set: { password: hashedPassword },
+    });
+  } catch (error) {
+    throw new Error(responseMessage.INTERNAL_SERVER_ERROR_MESSAGE);
   }
-
-  if (role !== "Admin") {
-    throw new ApiError(httpStatus.FORBIDDEN, responseMessage.FORBIDDEN_MESSAGE);
-  }
-
-  const newAccessToken = jwtHelper.createToken(
-    {
-      id,
-      name,
-      email,
-      phone,
-      role,
-      profile,
-    },
-    config.jwt.secret as Secret,
-    config.jwt.expiresIn as string
-  );
-
-  return {
-    accessToken: newAccessToken,
-  };
 };
 
 const changePassword = async (
-  user: JwtPayload | null,
-  payload: IChangePassword
-): Promise<void> => {
-  const { oldPassword, newPassword } = payload;
-
-  const isUserExist = await User.findOne({ email: user?.email }).select(
-    "+password"
-  );
-
-  if (!isUserExist) {
-    throw new ApiError(httpStatus.NOT_FOUND, responseMessage.USER_NOT_EXIST);
+  userId: string,
+  oldPassword: string,
+  newPassword: string
+) => {
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return false;
+    }
+    const isPassMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isPassMatch) {
+      return false;
+    }
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+    await User.findByIdAndUpdate(userId, {
+      $set: { password: hashedPassword },
+    });
+    return true;
+  } catch (error) {
+    throw new Error(responseMessage.INTERNAL_SERVER_ERROR_MESSAGE);
   }
-
-  const isPasswordMatched = await isUserExist.isPasswordMatched(
-    oldPassword,
-    isUserExist.password
-  );
-
-  if (!isPasswordMatched) {
-    throw new ApiError(
-      httpStatus.UNAUTHORIZED,
-      responseMessage.OLD_PASSWORD_ERROR
-    );
-  }
-
-  isUserExist.password = newPassword;
-  await isUserExist.save();
 };
 
 export const AuthService = {
   createUser,
   userLogin,
-  refreshToken,
   changePassword,
+  resetPassword,
+  forgetPassword,
 };

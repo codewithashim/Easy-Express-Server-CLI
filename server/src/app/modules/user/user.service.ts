@@ -46,9 +46,7 @@ const updateUser = async (
         `User ${responseMessage.NOT_FOUND_MESSAGE}`
       );
     }
-
     const updateUserData = payload;
-
     const result = await User.findOneAndUpdate({ _id: id }, updateUserData, {
       new: true,
     });

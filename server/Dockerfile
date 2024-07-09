@@ -1,19 +1,19 @@
-# Stage 1: Build stage
-FROM node:21-alpine AS build
+FROM node:20-alpine AS builder
 
-WORKDIR /usr/src/app
+WORKDIR /app
 
-COPY package*.json ./
-COPY yarn.lock ./
+COPY package.json yarn.lock ./
 
-RUN yarn install --production
+RUN yarn install
 
-FROM node:21-alpine AS production
-
-WORKDIR /usr/src/app
-
-COPY --from=build /usr/src/app/node_modules ./node_modules
 COPY . .
+
+FROM node:20-alpine
+
+WORKDIR /app
+
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app ./
 
 EXPOSE 8000
 

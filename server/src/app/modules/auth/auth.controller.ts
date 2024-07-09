@@ -1,21 +1,15 @@
 import { Request, Response } from "express";
 import catchAsync from "../../../shared/catchAsync";
 import { AuthService } from "./auth.service";
-import {
-  ILoginUserResponse,
-  IRefreshTokenResponse,
-  IUser,
-} from "../user/user.interface";
+import { IUser } from "../user/user.interface";
 import sendResponse from "../../../shared/sendResponse";
 import httpStatus from "http-status";
-import config from "../../../config";
 import { responseMessage } from "../../../constants/message";
 import { logger } from "../../../shared/logger";
 import { uploadOnCloudinary } from "../../middlewares/cloudinary/cloudinary";
 
 const createUser = catchAsync(async (req: Request, res: Response) => {
   const userData: IUser = req.body;
-
   if (!userData.phone) {
     logger.error(responseMessage.PHONE_NUMBER_REQUIRED_MESSAGE);
     return res.status(httpStatus.BAD_REQUEST).send({
@@ -23,21 +17,19 @@ const createUser = catchAsync(async (req: Request, res: Response) => {
       message: responseMessage.PHONE_NUMBER_REQUIRED_MESSAGE,
     });
   }
-
   let profileImageUrl: string | undefined;
+
   if (req.file) {
     const uploadResult = await uploadOnCloudinary(req.file.path);
     if (uploadResult) {
       profileImageUrl = uploadResult.secure_url;
     }
   }
-
   if (profileImageUrl) {
     userData.profile = profileImageUrl;
   }
 
   const result = await AuthService.createUser(userData);
-
   sendResponse<IUser>(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -47,67 +39,107 @@ const createUser = catchAsync(async (req: Request, res: Response) => {
 });
 
 const userLogin = catchAsync(async (req: Request, res: Response) => {
-  const loginData = req.body;
-  const result = await AuthService.userLogin(loginData);
-
-  const cookieOptions = {
-    secure: config.env === "production" ? true : false,
+  const data = req.body;
+  const result = await AuthService.userLogin(data);
+  res.cookie("accessToken", result, {
     httpOnly: true,
-  };
+    sameSite: "none",
+    secure: true,
+  });
 
-  res.cookie("refreshToken", result.refreshToken, cookieOptions);
-
-  sendResponse<ILoginUserResponse>(res, {
+  sendResponse<any>(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: responseMessage.SIGNIN_MESSAGE,
     data: {
-      id: result.id,
-      name: result.name,
-      profile: result.profile,
-      phone: result.phone,
-      email: result.email,
-      role: result.role,
-      accessToken: result.accessToken,
+      token : result
     },
   });
 });
 
-const refreshToken = catchAsync(async (req: Request, res: Response) => {
-  const { refreshToken } = req.cookies;
-  const result = await AuthService.refreshToken(refreshToken);
+const forgetPassword = catchAsync(async (req: Request, res: Response) => {
+  const { email } = req.body;
+  const result = await AuthService.forgetPassword(email);
 
-  const cookieOptions = {
-    secure: config.env === "production" ? true : false,
-    httpOnly: true,
-  };
+  if (result === false) {
+    sendResponse(res, {
+      success: false,
+      statusCode: httpStatus.NOT_FOUND,
+      message: "User not found",
+      data: null,
+    });
+  } else if (result && result.messageId) {
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message:"Reset password link was sent to your email. Please check your inbox",
+      data: null,
+    });
+  } else {
+    sendResponse(res, {
+      success: false,
+      statusCode: httpStatus.BAD_REQUEST,
+      message: "Something went wrong sending reset email",
+      data: null,
+    });
+  }
+});
 
-  res.cookie("refreshToken", refreshToken, cookieOptions);
-
-  sendResponse<IRefreshTokenResponse>(res, {
-    statusCode: httpStatus.OK,
+const resetPassword = catchAsync(async (req: Request, res: Response) => {
+  const { userId, password } = req.body;
+  await AuthService.resetPassword(userId, password);
+  sendResponse(res, {
     success: true,
-    message: responseMessage.REFETCH_TOKEN_MESSAGE,
-    data: result,
+    statusCode: httpStatus.OK,
+    message: "Your password was changed",
+    data: null,
   });
 });
 
 const changePassword = catchAsync(async (req: Request, res: Response) => {
-  const user = req.user;
-  const { ...passwordData } = req.body;
+  const { userId, oldPassword, newPassword } = req.body;
+  const result = await AuthService.changePassword(
+    userId,
+    oldPassword,
+    newPassword
+  );
 
-  await AuthService.changePassword(user, passwordData);
+  if (!result) {
+    sendResponse(res, {
+      success: false,
+      statusCode: httpStatus.OK,
+      message: "Your old password was not correct",
+      data: null,
+    });
+  } else {
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Your password was changed",
+      data: null,
+    });
+  }
+});
 
+const logout = catchAsync(async (req: Request, res: Response) => {
+  res.clearCookie("accessToken", {
+    httpOnly: true,
+    sameSite: "none",
+    secure: true,
+  });
   sendResponse(res, {
-    statusCode: 200,
+    statusCode: httpStatus.OK,
     success: true,
-    message: responseMessage.PASSWORD_CHANGE_MESSAGE,
+    message: "Logout successful",
+    data: null,
   });
 });
 
 export const AuthController = {
   createUser,
   userLogin,
-  refreshToken,
   changePassword,
+  logout,
+  resetPassword,
+  forgetPassword,
 };
