@@ -1,19 +1,31 @@
 #!/usr/bin/env node
+import chalk from 'chalk';
+import figlet from 'figlet';
+import { prompt } from '../cli/prompts.js';
+import { setupProject } from '../cli/setup.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-const path = require("path");
-const fs = require("fs-extra");
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-const srcDir = path.join(__dirname, "../server");
-const destDir = process.cwd();
+async function main() {
+  console.log(
+    chalk.cyan(
+      figlet.textSync('Easy Express CWA', { horizontalLayout: 'full' })
+    )
+  );
 
-fs.copy(srcDir, destDir, (err) => {
-  if (err) {
-    console.error("Error copying backend setup:", err);
-  } else {
-    console.log("Backend setup successfully copied!");
-    console.log("You can start your server by running:");
-    console.log("cd server");
-    console.log("yarn install");
-    console.log("yarn dev");
+  console.log(chalk.cyan('Welcome to Easy Express CLI!'));
+  console.log(chalk.yellow('Let\'s set up your new Express project.\n'));
+
+  try {
+    const options = await prompt();
+    const projectPath = path.join(process.cwd(), options.projectName);
+    await setupProject(projectPath, options);
+  } catch (error) {
+    console.error(chalk.red('Error setting up project:'), error);
   }
-});
+}
+
+main();

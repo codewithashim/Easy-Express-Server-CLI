@@ -1,19 +1,29 @@
 {
-  "name": "easy-express-cwa",
-  "version": "1.2.10",
+  "name": "easy-express-cwa-v2",
+  "version": "2.0.0",
   "description": "CLI tool to setup a common Express.js backend developed by codewithashim",
   "main": "bin/cli.js",
   "license": "MIT",
+  "type": "module",
   "bin": {
-    "easy-express-cwa": "bin/cli.js"
+    "easy-express-cwa-v2": "bin/cli.js"
   },
   "author": "Ashim Rudra Paul",
   "dependencies": {
-    "fs-extra": "^11.2.0"
+    "boxen": "^8.0.1",
+    "chalk": "^4.1.2",
+    "cli-cursor": "^5.0.0",
+    "cli-spinners": "^3.2.0",
+    "figlet": "^1.7.0",
+    "fs-extra": "^11.2.0",
+    "gradient-string": "^2.0.2",
+    "inquirer": "^10.2.1",
+    "ora": "^8.1.0"
   },
   "scripts": {
-    "start": "node bin/cli.js",
-    "install": "echo 'easy-express-cwa has been installed. Use `npx easy-express-cwa` command to get started.'"
+   "start": "NODE_NO_WARNINGS=1 node bin/cli.js",
+    "build": "tsc",
+    "install": "echo 'easy-express-cwa-v2 has been installed. Use `npx easy-express-cwa-v2` command to get started.'"
   },
   "keywords": [
     "express",
@@ -40,5 +50,11 @@
     "TypeScript",
     "JavaScript",
     "Codewithashim"
-  ]
+  ],
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/inquirer": "^9.0.7",
+    "@types/node": "^22.5.4",
+    "typescript": "^5.5.4"
+  }
 }
