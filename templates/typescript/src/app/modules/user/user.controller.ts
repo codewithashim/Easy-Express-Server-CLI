@@ -6,29 +6,19 @@ import { IUser } from "./user.interface";
 import sendResponse from "../../../shared/helpers/sendResponse.helper";
 import catchAsync from "../../../shared/helpers/catchAsync.helper";
 
-const getAllUsers = catchAsync(async (req: Request, res: Response) => {
-    const result = await UserService.getAllUsers();
+// const getAllUsers = catchAsync(async (req: Request, res: Response) => {
+//     const result = await UserService.getAllUsers();
 
-    sendResponse<IUser[]>(res, {
-        statusCode: httpStatus.OK,
-        success: true,
-        message: responseMessage.GET_ALL_USERS_MESSAGE,
-        data: result,
-    });
-});
+//     sendResponse<IUser[]>(res, {
+//         statusCode: httpStatus.OK,
+//         success: true,
+//         message: responseMessage.GET_ALL_USERS_MESSAGE,
+//         data: result,
+//     });
+// });
 
-const deleteUser = catchAsync(async (req: Request, res: Response) => {
-    const { id } = req.params;
-    const result = await UserService.deleteUser(id);
-    sendResponse<IUser>(res, {
-        statusCode: httpStatus.OK,
-        success: true,
-        message: responseMessage.DELETE_USER_MESSAGE,
-        data: result,
-    });
-});
+
 
 export const UserController = {
-    getAllUsers,
-    deleteUser,
+    // getAllUsers,
 };

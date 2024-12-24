@@ -1,12 +1,16 @@
-import { Model } from "mongoose";
-import { ENUM_USER_ROLE } from "../../../shared/enums/user.enums";
+import { Model, Types } from "mongoose";
+import { ENUM_USER_ROLE, ENUM_USER_STATUS } from "../../../shared/enums/user.enums";
+import { IProfile } from "../profile/profile.interface";
 
-export type IUser = {
+export interface IUser {
+    _id: Types.ObjectId;
     email: string;
     phone: string;
     password: string;
     role: ENUM_USER_ROLE;
-};
+    status: ENUM_USER_STATUS;
+    profile: Types.ObjectId | IProfile;
+}
 
 export type IUserMethods = {
     isUserExist(email: string): Promise<Partial<IUser> | null>;

@@ -1,13 +1,13 @@
 import { ErrorRequestHandler, NextFunction, Request, Response } from 'express';
 import { ZodError } from 'zod';
 import httpStatus from 'http-status';
-import ApiError from './apiError';
-import castError from './castError';
-import validationError from './validationError';
-import zodError from './zodError';
+import ApiError from './api.error';
+import castError from './cast.error';
+import validationError from './validation.error';
+import zodError from './zod.error';
 import { logger } from '../logger/logger';
 import { envConfig } from '../../config/environment.config';
-import { IGenericErrorResponse } from '../../types/errorType';
+import { IGenericErrorResponse } from '../../types/error.type';
 
 type ErrorHandler = (error: any) => IGenericErrorResponse;
 

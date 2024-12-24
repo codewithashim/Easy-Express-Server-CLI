@@ -2,8 +2,8 @@ import { NextFunction, Request, Response } from 'express';
 import httpStatus from 'http-status';
 import { Secret } from 'jsonwebtoken';
 
-import ApiError from '../../errors/apiError';
-import { jwtHelper } from '../../../utils/jwt/jwt.utils';
+import ApiError from '../../errors/api.error';
+import { jwtHelpers } from '../../../utils/jwt/jwt.utils';
 import { envConfig } from '../../../config/environment.config';
 
 export const authGard =
@@ -18,7 +18,7 @@ export const authGard =
 
                 let verifiedUser = null;
 
-                verifiedUser = jwtHelper.verifyToken(token, envConfig.jwt.secret as Secret);
+                verifiedUser = jwtHelpers.verifyToken(token, envConfig.jwt.secret as Secret);
 
                 req.user = verifiedUser;
 
@@ -30,8 +30,6 @@ export const authGard =
                 next(error);
             }
         };
-
-
 
 export const verifyJwt = (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -47,7 +45,7 @@ export const verifyJwt = (req: Request, res: Response, next: NextFunction) => {
             });
         }
 
-        const user: any = jwtHelper.verifyToken(token, envConfig.jwt.secret as Secret);
+        const user: any = jwtHelpers.verifyToken(token, envConfig.jwt.secret as Secret);
 
         if (!user) {
             return res.json({
@@ -72,3 +70,4 @@ export const verifyJwt = (req: Request, res: Response, next: NextFunction) => {
     }
 };
 
+export default { authGard, verifyJwt };

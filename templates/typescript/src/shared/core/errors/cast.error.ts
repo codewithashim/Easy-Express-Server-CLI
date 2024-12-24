@@ -1,6 +1,6 @@
 
 import mongoose from 'mongoose';
-import { IGenericErrorMessage } from '../../types/errorType';
+import { IGenericErrorMessage } from '../../types/error.type';
 
 const castError = (error: mongoose.Error.CastError) => {
   const errors: IGenericErrorMessage[] = [

@@ -1,7 +1,7 @@
 import { Schema, model } from "mongoose";
 import { IUser, UserModel } from "./user.interface";
 import bcrypt from "bcrypt";
-import { ENUM_USER_ROLE } from "../../../shared/enums/user.enums";
+import { ENUM_USER_ROLE, ENUM_USER_STATUS } from "../../../shared/enums/user.enums";
 import { envConfig } from "../../../shared/config/environment.config";
 
 const UserSchema = new Schema<IUser>(
@@ -25,6 +25,15 @@ const UserSchema = new Schema<IUser>(
             type: String,
             enum: Object.values(ENUM_USER_ROLE),
             required: true,
+        },
+        status: {
+            type: String,
+            enum: Object.values(ENUM_USER_STATUS),
+            default: ENUM_USER_STATUS.ACTIVE,
+        },
+        profile: {
+            type: Schema.Types.ObjectId,
+            ref: 'Profile',
         },
     },
     {
@@ -59,11 +68,11 @@ UserSchema.methods.isUserExist = async function (
             password: 1,
             id: 1,
             role: 1,
-            name: 1,
             email: 1,
             phone: 1,
+            profile: 1,
         }
-    );
+    ).populate('profile');
     return user;
 };
 

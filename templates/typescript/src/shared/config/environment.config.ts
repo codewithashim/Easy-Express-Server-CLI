@@ -28,10 +28,8 @@ export const envConfig = {
         uri: getEnv('DB_URI', 'mongodb://localhost:27017/easy-express'),
         dbClient: getEnv('DB_CLIENT', 'mongodb'),
         options: {
-            // useNewUrlParser: true,
-            // useUnifiedTopology: true,
-            // useCreateIndex: true,
-            // useFindAndModify: false,
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
         },
     },
 
@@ -39,6 +37,10 @@ export const envConfig = {
     jwt: {
         secret: getEnv('JWT_SECRET', 'secret'),
         expiresIn: getEnv('JWT_EXPIRES_IN', '7d'),
+        refresh_secret: getEnv('JWT_REFRESH_SECRET', 'refresh_secret'),
+        refresh_expires_in: getEnv('JWT_REFRESH_EXPIRES_IN', '30d'),
+        reset_secret: getEnv('JWT_RESET_SECRET', 'reset_secret'),
+        reset_expires_in: getEnv('JWT_RESET_EXPIRES_IN', '1d'),
         cookieExpiresIn: parseInt(getEnv('JWT_COOKIE_EXPIRES_IN', '7')),
         cookieName: getEnv('JWT_COOKIE_NAME', 'jwt'),
         cookieSecure: getEnv('JWT_COOKIE_SECURE', 'false') === 'true',
